@@ -300,7 +300,27 @@ export default class MoviesDAO {
             _id: ObjectId(id),
           },
         },
+        {
+          $lookup: {
+            from: "comments",
+            let: { id: "$_id" },
+            pipeline: [
+              { $match: { $expr: { $eq: ["$movie_id", "$$id"] } } },
+              {
+                $sort: { date: -1 },
+              },
+            ],
+            as: "comments",
+          },
+        },
+        {
+          $sort: {
+            "comments.date": -1,
+          },
+        },
       ]
+      //   {$unwind: '$service.apps.updates'},
+      // {$sort: {'service.apps.updates.date': 1}}
       return await movies.aggregate(pipeline).next()
     } catch (e) {
       /**
